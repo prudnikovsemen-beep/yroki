@@ -1,57 +1,45 @@
-from typing import Union
-
-def get_mask_card_number(card_number: Union[str, int]) -> str:
+def get_mask_card_number(card_number: str) -> str:
     """
-    Маскирует номер банковской карты.
-
-    Видимы первые 6 и последние 4 цифры, остальные заменяются на звёздочки.
-    Формат вывода: XXXX XX** **** XXXX
+    Маскирует номер банковской карты в формате XXXX XX** **** XXXX.
 
     Args:
-        card_number (Union[str, int]): Номер карты в виде строки или числа.
+        card_number (str): Номер карты (16 цифр).
 
     Returns:
         str: Замаскированный номер карты.
-
-    Raises:
-        ValueError: Если номер карты не содержит ровно 16 цифр.
     """
-    # Приводим к строке и оставляем только цифры
-    cleaned_number = ''.join(filter(str.isdigit, str(card_number)))
+    # Удаляем пробелы, если они есть
+    cleaned_number = card_number.replace(' ', '')
 
-    if len(cleaned_number) != 16:
-        raise ValueError(f"Номер карты должен содержать ровно 16 цифр, получено: {len(cleaned_number)}")
+    # Проверяем длину номера карты
+    if len(cleaned_number) != 16 or not cleaned_number.isdigit():
+        raise ValueError("Номер карты должен содержать 16 цифр")
 
-    # Формируем маску: первые 6 + 6 звёздочек + последние 4
-    masked = cleaned_number[:6] + '*' * 6 + cleaned_number[-4:]
+    # Формируем маску: первые 6 цифр, затем 6 звёздочек, затем последние 4 цифры
+    masked = (
+        f"{cleaned_number[:4]} {cleaned_number[4:6]}**"
+        f" **** {cleaned_number[-4:]}"
+    )
+    return masked
 
-    # Разбиваем на блоки по 4 цифры и соединяем пробелами
-    blocks = [masked[i:i+4] for i in range(0, 16, 4)]
-    return ' '.join(blocks)
 
 
-def get_mask_account(account_number: Union[str, int]) -> str:
+def get_mask_account(account_number: str) -> str:
     """
-    Маскирует номер банковского счёта.
-
-    Видимы только последние 4 цифры, перед ними две звёздочки.
-    Формат вывода: **XXXX
+    Маскирует номер банковского счёта в формате **XXXX.
 
     Args:
-        account_number (Union[str, int]): Номер счёта в виде строки или числа.
+        account_number (str): Номер счёта.
 
     Returns:
         str: Замаскированный номер счёта.
-
-    Raises:
-        ValueError: Если номер счёта содержит меньше 4 цифр.
     """
-    # Приводим к строке и оставляем только цифры
-    cleaned_number = ''.join(filter(str.isdigit, str(account_number)))
+    # Удаляем пробелы, если они есть
+    cleaned_number = account_number.replace(' ', '')
 
-    if len(cleaned_number) < 4:
-        raise ValueError(f"Номер счёта должен содержать минимум 4 цифры, получено: {len(cleaned_number)}")
+    # Проверяем, что номер состоит только из цифр
+    if not cleaned_number.isdigit():
+        raise ValueError("Номер счёта должен содержать только цифры")
 
-    # Берём последние 4 цифры
-    visible_part = cleaned_number[-4:]
-    return f"**{visible_part}"
+    # Берём последние 4 цифры и добавляем две звёздочки перед ними
+    return f"**{cleaned_number[-4:]}"
